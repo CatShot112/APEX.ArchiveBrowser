@@ -1,0 +1,12 @@
+.vs
+C++/Out
+
+*.db
+*.txt
+*.ini
+*.vcxproj.user
+*.vcxproj.filters
+
+!Props.txt
+!VPaths.txt
+!LayoutDefault.ini
