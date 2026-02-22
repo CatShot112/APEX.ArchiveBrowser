@@ -111,10 +111,8 @@ void CArchiveBrowser::Thread_ExtractFolder(SVFSDir* pDir) {
     for (auto file : pDir->m_Files)
         Thread_ExtractFile(file);
 
-    for (auto dir : pDir->m_Directories) {
-        if (!dir->m_Directories.empty())
-            Thread_ExtractFolder(dir);
-    }
+    for (auto dir : pDir->m_Directories)
+        Thread_ExtractFolder(dir);
 
     // If log then mutex?
     //CLog::INF("Extracted: %s, To: %s", pDir->m_Name.c_str(), "Extracted/");
