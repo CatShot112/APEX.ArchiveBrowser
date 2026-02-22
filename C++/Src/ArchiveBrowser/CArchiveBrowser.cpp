@@ -1,6 +1,7 @@
 #include "CArchiveBrowser.hpp"
-#include "../Database/CDatabaseManager.hpp"
+#include "EFileType.hpp"
 
+#include "../Database/CDatabaseManager.hpp"
 #include "../ArcTab/STabFileEntry.hpp"
 #include "../ArcTab/STabFileHeader.hpp"
 
@@ -211,6 +212,7 @@ void CArchiveBrowser::DrawFile(SVFSFile* file) {
     ImGui::TableNextColumn();
 
     ImGui::TreeNodeEx(file->m_Name.c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_None | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+    ImGui::SetItemTooltip("Archive ID: %d", file->m_ArchiveId);
 
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::Button("Extract")) {
@@ -273,7 +275,9 @@ void CArchiveBrowser::DrawFile(SVFSFile* file) {
 
     ImGui::TableNextColumn();
     //ImGui::Text("%s", FileTypeToString(file.m_FileType).c_str());
-    ImGui::Text("%s", "Unknown");
+    //ImGui::Text("%s", "Unknown");
+
+    ImGui::Text("%s", FileType::ToString(EFileType(file->m_FileType)).c_str());
 }
 void CArchiveBrowser::DrawDirectory(SVFSDir* directory) {
     ImGui::TableNextRow();
@@ -420,18 +424,18 @@ void CArchiveBrowser::OpenFile(std::string filePath, bool fromFolder, bool reloa
 
         // TODO: Store fileType by buffer in database once and only do fetching here.
 
-        /*std::string buffer;
+        std::string buffer;
         buffer.resize(32);
 
         arcFile.seekg(entry.m_Offset);
         arcFile.read(buffer.data(), 32);
 
-        int32_t fileType = BufferToFileType(buffer);*/
+        int32_t fileType = static_cast<int32_t>(FileType::BufToFileType(buffer));
 
         if (dehashed)
-            AddVPathToNode(m_RootDir, dehashedName.str(), path.replace_extension(".arc").string(), -1, entry.m_Size, archiveId, entry.m_Offset);
+            AddVPathToNode(m_RootDir, dehashedName.str(), path.replace_extension(".arc").string(), fileType, entry.m_Size, archiveId, entry.m_Offset);
         else
-            AddVPathToNode(m_HashedDir, dehashedName.str(), path.replace_extension(".arc").string() , -1, entry.m_Size, archiveId, entry.m_Offset);
+            AddVPathToNode(m_HashedDir, dehashedName.str(), path.replace_extension(".arc").string() , fileType, entry.m_Size, archiveId, entry.m_Offset);
     }
 
     tabFile.close();

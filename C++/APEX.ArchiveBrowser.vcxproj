@@ -126,6 +126,7 @@
     <ClInclude Include="Include\sqlite3\sqlite3.h" />
     <ClInclude Include="Include\sqlite3\sqlite3ext.h" />
     <ClInclude Include="Src\App.hpp" />
+    <ClInclude Include="Src\ArchiveBrowser\EFileType.hpp" />
     <ClInclude Include="Src\ArchiveBrowser\SVFSDir.hpp" />
     <ClInclude Include="Src\ArchiveBrowser\SVFSFile.hpp" />
     <ClInclude Include="Src\ArcTab\STabFileEntry.hpp" />
