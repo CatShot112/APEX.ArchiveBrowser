@@ -52,10 +52,8 @@ uint64_t CalcDirSize(SVFSDir* pDir) {
     for (auto& file : pDir->m_Files)
         size += file->m_FileSize;
 
-    for (auto dir : pDir->m_Directories) {
-        if (!dir->m_Files.empty())
+    for (auto dir : pDir->m_Directories)
             size += CalcDirSize(dir);
-    }
 
     return size;
 }
