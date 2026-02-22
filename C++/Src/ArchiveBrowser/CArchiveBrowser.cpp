@@ -45,6 +45,20 @@ static void Callback_ExtractTo(void* userData, const char* const* fileList, int 
     }
 }
 
+uint64_t CalcDirSize(SVFSDir* pDir) {
+    uint64_t size = 0;
+
+    for (auto& file : pDir->m_Files)
+        size += file->m_FileSize;
+
+    for (auto dir : pDir->m_Directories) {
+        if (!dir->m_Files.empty())
+            size += CalcDirSize(dir);
+    }
+
+    return size;
+}
+
 CArchiveBrowser& CArchiveBrowser::Instance() {
     static CArchiveBrowser instance;
     return instance;
@@ -254,7 +268,8 @@ void CArchiveBrowser::DrawFile(SVFSFile* file) {
     }
 
     ImGui::TableNextColumn();
-    ImGui::Text("%d", file->m_FileSize);
+    //ImGui::Text("%d", file->m_FileSize);
+    ImGui::Text("%s", Utils::BytesToHuman(file->m_FileSize).c_str());
 
     ImGui::TableNextColumn();
     //ImGui::Text("%s", FileTypeToString(file.m_FileType).c_str());
@@ -281,7 +296,8 @@ void CArchiveBrowser::DrawDirectory(SVFSDir* directory) {
     }
 
     ImGui::TableNextColumn();
-    ImGui::TextDisabled("---"); // Size
+    //ImGui::TextDisabled("---"); // Size
+    ImGui::TextDisabled(Utils::BytesToHuman(CalcDirSize(directory)).c_str());
     ImGui::TableNextColumn();
     ImGui::TextDisabled("---"); // Type
 
@@ -478,20 +494,6 @@ void CArchiveBrowser::Close() {
     m_HashedDir.m_Name = "Not dehashed";
 }
 
-uint64_t CalcDirSize(SVFSDir* pDir) {
-    uint64_t size = 0;
-
-    for (auto& file : pDir->m_Files)
-        size += file->m_FileSize;
-
-    for (auto& dir : pDir->m_Directories) {
-        if (!dir->m_Directories.empty())
-            size += CalcDirSize(dir);
-    }
-
-    return size;
-}
-
 void CArchiveBrowser::ExtractFile(SVFSFile* pFile) {
     m_OpenPopup = true;
 
@@ -503,7 +505,7 @@ void CArchiveBrowser::ExtractFolder(SVFSDir* pDir) {
     // TODO: Calculate total file count and total size.
     auto size = CalcDirSize(pDir);
 
-    CLog::INF("Directory size: %lld", size);
+    CLog::INF("Directory size: %s (%lld)", Utils::BytesToHuman(size).c_str(), size);
     
     m_OpenPopup = true;
 

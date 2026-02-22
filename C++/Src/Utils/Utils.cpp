@@ -29,4 +29,21 @@ namespace Utils {
 
         return result;
     }
+
+    std::string BytesToHuman(uint64_t bytes) {
+        static const char* suffix[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+
+        float fBytes = static_cast<float>(bytes);
+        uint32_t index = 0;
+
+        //if (bytes < 1024)
+        //    return std::string(std::to_string(bytes) + " " + suffix[index]);
+
+        while (fBytes >= 1024.00f && index <= (sizeof(suffix) / sizeof(suffix[0]))) {
+            index++;
+            fBytes /= 1024.00f;
+        }
+
+        return std::format("{:7.2f} {}", fBytes, suffix[index]);
+    }
 }
