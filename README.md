@@ -4,17 +4,22 @@
 ## Info
 Simple program for browsing and extracting APEX Engine archive files (tested on theHunter: Call of the Wild, Generation Zero).  
 
-Currently you will need to compile the program by yourself.  
-I will add build actions on 1.0.0 release (no ETA, will release when I'm happy with source :D).
+~~Currently you will need to compile the program by yourself.~~  
+~~I will add build actions on 1.0.0 release (no ETA, will release when I'm happy with source :D).~~  
+
+You can download Pre-Release [HERE](https://github.com/CatShot112/APEX.ArchiveBrowser/releases/tag/v0.1.0)
 
 ## Usage
 1. Initialize database (if not initialized) (Database -> Initialize):  
    Will create .db file with props and vPaths.  
-   You can skip creating database if loading data from text file.  
-2. Load data into memory (Database -> Load from .txt/.db file).  
-3. Open single archive or whole folder (File -> Open File/Folder):  
+   You can skip creating database if loading data from text file.
+
+3. Load data into memory (Database -> Load from .txt/.db file).
+
+4. Open single archive or whole folder (File -> Open File/Folder):  
    If opening folder program will load all files recursively.  
-   You can select .arc or .tab.  
+   You can select .arc or .tab.
+
 5. If you have duplicated hashes in database/memory you can select which vPath should be used.  
    File -> Resolve duplicates.  
    You can extract file to view it in external program (hex editor or something).  
