@@ -2,7 +2,8 @@
 
 #include <mutex>
 
-enum SDL_AppResult;
+#include <SDL3/SDL_init.h>
+
 struct SDL_Window;
 union SDL_Event;
 

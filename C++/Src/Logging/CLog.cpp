@@ -10,13 +10,17 @@ CLog::~CLog() {}
 static std::string Helper(const char* fmt, va_list args) {
     std::string result;
 
-    size_t len = _vscprintf(fmt, args);
+    va_list copy{};
+    va_copy(copy, args);
+    size_t len = vsnprintf(nullptr, 0, fmt, copy);
+    va_end(copy);
+
     if (len < 0)
         return "";
 
     if (len > 0) {
         result.resize(len);
-        vsnprintf_s(result.data(), len + 1, _TRUNCATE, fmt, args);
+        vsnprintf(result.data(), len + 1, fmt, args);
     }
 
     return result;

@@ -24,7 +24,7 @@ ImVec4 clearColor = { 0.45f, 0.55f, 0.60f, 1.00f };
 
 App app;
 
-static SDL_AppResult SDL_AppInit(void** appState, int argc, char** argv) {
+SDL_AppResult SDL_AppInit(void** appState, int argc, char** argv) {
     SDL_SetAppMetadata(PROGRAM_NAME, PROGRAM_VER, nullptr);
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {

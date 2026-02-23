@@ -2,6 +2,7 @@
 
 #include "../Logging/CLog.hpp"
 
+#include <thread>
 #include <fstream>
 #include <filesystem>
 

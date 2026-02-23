@@ -10,6 +10,7 @@
 #include <imgui/imgui.h>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 #include <regex>
 
 namespace fs = std::filesystem;

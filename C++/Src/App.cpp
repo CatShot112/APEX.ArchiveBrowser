@@ -19,8 +19,8 @@
 // Imitating lock_guard
 class CTimed {
     std::string m_String;
-    std::chrono::steady_clock::time_point m_Start;
-    std::chrono::steady_clock::time_point m_End;
+    std::chrono::high_resolution_clock::time_point m_Start;
+    std::chrono::high_resolution_clock::time_point m_End;
 
 public:
     CTimed(std::string str) {
