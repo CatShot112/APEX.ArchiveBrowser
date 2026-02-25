@@ -34,13 +34,13 @@ namespace Utils {
         static const char* suffix[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
 
         float fBytes = static_cast<float>(bytes);
+
         uint32_t index = 0;
+        auto size = sizeof(suffix) / (sizeof(suffix[0]));
 
-        //if (bytes < 1024)
-        //    return std::string(std::to_string(bytes) + " " + suffix[index]);
-
-        while (fBytes >= 1024.00f && index <= (sizeof(suffix) / sizeof(suffix[0]))) {
+        while (fBytes >= 1024.00f && index < (size - 1)) {
             index++;
+
             fBytes /= 1024.00f;
         }
 

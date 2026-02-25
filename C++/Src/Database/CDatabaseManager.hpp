@@ -25,6 +25,7 @@ class CDatabaseManager {
 
     bool m_OpenPopup;
     bool m_Initialized;
+    bool m_Initializing;
     bool m_ShouldCancel;
 
     void ClearProps();
@@ -97,6 +98,7 @@ public:
     void DrawProgressbar();
 
     const bool IsInitialized();
+    const bool IsInitializing();
 
     const std::unordered_multimap<uint32_t, std::string>& GetProps();
     const std::unordered_multimap<uint32_t, std::string>& GetVPaths();

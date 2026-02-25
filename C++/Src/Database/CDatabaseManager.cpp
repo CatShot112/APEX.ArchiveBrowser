@@ -23,6 +23,7 @@ CDatabaseManager::CDatabaseManager() {
 
     m_OpenPopup = false;
     m_Initialized = false;
+    m_Initializing = false;
     m_ShouldCancel = false;
 }
 CDatabaseManager::~CDatabaseManager() {
@@ -44,6 +45,9 @@ void CDatabaseManager::ClearVPaths() {
 }
 
 void CDatabaseManager::Thread_CreateDatabase() {
+    m_Initialized = false;
+    m_Initializing = true;
+
     if (sqlite3_open("Database_base.db", &m_DBBase)) {
         CLog::ERR("Error while opening database! Error: %s", sqlite3_errmsg(m_DBBase));
         return;
@@ -226,9 +230,13 @@ void CDatabaseManager::Thread_CreateDatabase() {
 
     sqlite3_exec(m_DBBase, idx2, nullptr, nullptr, nullptr);
     sqlite3_close(m_DBBase);
+
+    m_Initialized = true;
+    m_Initializing = false;
 }
 void CDatabaseManager::Thread_LoadDataFromTxt() {
     m_Initialized = false;
+    m_Initializing = true;
 
     ClearProps();
     ClearVPaths();
@@ -306,9 +314,11 @@ void CDatabaseManager::Thread_LoadDataFromTxt() {
     }
 
     m_Initialized = true;
+    m_Initializing = false;
 }
 void CDatabaseManager::Thread_LoadDataFromDb() {
     m_Initialized = false;
+    m_Initializing = true;
 
     ClearProps();
     ClearVPaths();
@@ -395,9 +405,13 @@ void CDatabaseManager::Thread_LoadDataFromDb() {
     sqlite3_close(m_DBBase);
 
     m_Initialized = true;
+    m_Initializing = false;
 }
 
 void CDatabaseManager::CreateDatabase(bool recreate) {
+    if (m_Initializing)
+        return;
+
     if (!recreate && fs::exists("Database_base.db")) {
         CLog::INF("Database already exists: %s", "Database_base.db");
         return;
@@ -422,12 +436,18 @@ void CDatabaseManager::CancelCurrentOperation() {
 }
 
 void CDatabaseManager::LoadDataFromFileTxt() {
+    if (m_Initializing)
+        return;
+
     m_OpenPopup = true;
 
     std::thread thread(&CDatabaseManager::Thread_LoadDataFromTxt, this);
     thread.detach();
 }
 void CDatabaseManager::LoadDataFromFileDb() {
+    if (m_Initializing)
+        return;
+
     m_OpenPopup = true;
 
     std::thread thread(&CDatabaseManager::Thread_LoadDataFromDb, this);
@@ -659,6 +679,7 @@ void CDatabaseManager::DrawProgressbar() {
 }
 
 const bool CDatabaseManager::IsInitialized() { return m_Initialized; }
+const bool CDatabaseManager::IsInitializing() { return m_Initializing; }
 
 const std::unordered_multimap<uint32_t, std::string>& CDatabaseManager::GetProps() { return m_Props; }
 const std::unordered_multimap<uint32_t, std::string>& CDatabaseManager::GetVPaths() { return m_VPaths; }
