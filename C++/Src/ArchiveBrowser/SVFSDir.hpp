@@ -77,6 +77,28 @@ struct SVFSDir {
         }
     }
 
+    uint32_t GetFileCount(bool recursive = true) {
+        auto count = m_Files.size();
+
+        if (recursive) {
+            for (auto dir : m_Directories)
+                count += dir->GetFileCount();
+        }
+
+        return static_cast<uint32_t>(count);
+    }
+
+    uint32_t GetFolderCount(bool recursive = true) {
+        auto count = m_Directories.size();
+
+        if (recursive) {
+            for (auto dir : m_Directories)
+                count += dir->GetFolderCount();
+        }
+
+        return static_cast<uint32_t>(count);
+    }
+
     std::vector<SVFSFile*>::iterator GetFileIt(std::string name) {
         return std::find_if(m_Files.begin(), m_Files.end(), [&n = name](const SVFSFile* file) { return !file->m_Name.compare(n); });
     }

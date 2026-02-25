@@ -11,4 +11,5 @@ namespace Utils {
     std::string UnixToDateTime(uint64_t timestamp);
 
     std::string BytesToHuman(uint64_t bytes);
+    std::string BytesToHuman2(uint64_t bytes1, uint64_t bytes2);
 }

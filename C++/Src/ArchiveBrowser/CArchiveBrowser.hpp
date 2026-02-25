@@ -20,10 +20,16 @@ class CArchiveBrowser {
     bool m_OpenedFolder;
     std::string m_OpenedPath;
 
+    uint32_t m_ProgressCur;
+    uint32_t m_ProgressTar;
+    uint32_t m_ProgressCurSize;
+    uint32_t m_ProgressTarSize;
+    float m_ProgressExtraction;
+
     std::vector<uint32_t> m_DuplicateHashes;
 
-    void Thread_ExtractFile(SVFSFile* pFile);
-    void Thread_ExtractFolder(SVFSDir* pDir);
+    void Thread_ExtractFile(SVFSFile* pFile, std::string path = "");
+    void Thread_ExtractFolder(SVFSDir* pDir, std::string path = "");
 
 protected:
     CArchiveBrowser();
@@ -42,9 +48,11 @@ public:
     void Cleanup();
 
     void Draw();
-    void DrawResolver();
 
 private:
+    void DrawResolver();
+    void DrawProgressbar();
+
     void DrawFile(SVFSFile* file);
     void DrawDirectory(SVFSDir* directory);
 
@@ -55,8 +63,8 @@ public:
     void OpenFolder(std::string path, bool reload = false);
     void Close();
 
-    void ExtractFile(SVFSFile* pFile);
-    void ExtractFolder(SVFSDir* pDir);
+    void ExtractFile(SVFSFile* pFile, std::string path = "");
+    void ExtractFolder(SVFSDir* pDir, std::string path = "");
 
     void ResolveDuplicate(uint32_t hash, std::string vPath);
 

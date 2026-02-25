@@ -46,4 +46,29 @@ namespace Utils {
 
         return std::format("{:7.2f} {}", fBytes, suffix[index]);
     }
+
+    std::string BytesToHuman2(uint64_t bytes1, uint64_t bytes2) {
+        static const char* suffix[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" };
+
+        float fBytes1 = static_cast<float>(bytes1);
+        float fBytes2 = static_cast<float>(bytes2);
+
+        uint32_t index = 0;
+        auto size = sizeof(suffix) / sizeof(suffix[0]);
+
+        if (bytes1 > bytes2)
+            std::swap(fBytes1, fBytes2);
+
+        while (fBytes2 >= 1024.00f && index < (size - 1)) {
+            index++;
+
+            fBytes1 /= 1024.00f;
+            fBytes2 /= 1024.00f;
+        }
+
+        //uint64_t cnt = std::to_string(fBytes2).length();
+
+        //return std::vformat("{:{}.2f}/{:{}.2f} {}", std::make_format_args(fBytes1, cnt, fBytes2, cnt, suffix[index]));
+        return std::format("{:.2f}/{:.2f} {}", fBytes1, fBytes2, suffix[index]);
+    }
 }

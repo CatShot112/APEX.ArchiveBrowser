@@ -6,6 +6,7 @@
 #include "../ArcTab/STabFileHeader.hpp"
 
 #include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_dialog.h>
 
 #include <imgui/imgui.h>
 #include <filesystem>
@@ -27,12 +28,18 @@ CArchiveBrowser::CArchiveBrowser() {
     m_OpenedFile = false;
     m_OpenedFolder = false;
     m_OpenedPath = "";
+
+    m_ProgressCur = 0;
+    m_ProgressTar = 0;
+    m_ProgressCurSize = 0;
+    m_ProgressTarSize = 0;
+    m_ProgressExtraction = 0.00f;
 }
 CArchiveBrowser::~CArchiveBrowser() {
 
 }
 
-static void Callback_ExtractTo(void* userData, const char* const* fileList, int filter) {
+static void Callback_FileExtractTo(void* userData, const char* const* fileList, int filter) {
     if (!fileList) {
         CLog::ERR(SDL_GetError());
         return;
@@ -43,7 +50,25 @@ static void Callback_ExtractTo(void* userData, const char* const* fileList, int 
     }
 
     if (*fileList) {
+        auto& ab = CArchiveBrowser::Instance();
 
+        ab.ExtractFile(reinterpret_cast<SVFSFile*>(userData), *fileList);
+    }
+}
+static void Callback_FolderExtractTo(void* userData, const char* const* fileList, int filter) {
+    if (!fileList) {
+        CLog::ERR(SDL_GetError());
+        return;
+    }
+    else if (!*fileList) {
+        CLog::WAR("User did not select any file to save (cancelled).");
+        return;
+    }
+
+    if (*fileList) {
+        auto& ab = CArchiveBrowser::Instance();
+
+        ab.ExtractFolder(reinterpret_cast<SVFSDir*>(userData), *fileList);
     }
 }
 
@@ -54,7 +79,7 @@ uint64_t CalcDirSize(SVFSDir* pDir) {
         size += file->m_FileSize;
 
     for (auto dir : pDir->m_Directories)
-            size += CalcDirSize(dir);
+        size += CalcDirSize(dir);
 
     return size;
 }
@@ -64,9 +89,19 @@ CArchiveBrowser& CArchiveBrowser::Instance() {
     return instance;
 }
 
-void CArchiveBrowser::Thread_ExtractFile(SVFSFile* pFile) {
+void CArchiveBrowser::Thread_ExtractFile(SVFSFile* pFile, std::string path) {
+    {
+        std::lock_guard lock(m_Mutex);
+
+        if (m_ShouldCancel)
+            return;
+    }
+    
     std::string pathBase = SDL_GetBasePath();
     std::string pathDest = pathBase + "Extracted/";
+
+    if (!path.empty())
+        pathDest = path + "/";
 
     auto vPath = ConstructVPath(pFile);
 
@@ -103,15 +138,26 @@ void CArchiveBrowser::Thread_ExtractFile(SVFSFile* pFile) {
     {
         std::lock_guard lock(m_Mutex);
 
+        m_ProgressCur++;
+        m_ProgressCurSize += pFile->m_FileSize;
+        m_ProgressExtraction = (static_cast<float>(m_ProgressCur) / m_ProgressTar);
+
         CLog::INF("Extracted: %s, To: %s", pFile->m_Name.c_str(), pathDest.c_str());
     }
 }
-void CArchiveBrowser::Thread_ExtractFolder(SVFSDir* pDir) {
+void CArchiveBrowser::Thread_ExtractFolder(SVFSDir* pDir, std::string path) {
+    {
+        std::lock_guard lock(m_Mutex);
+
+        if (m_ShouldCancel)
+            return;
+    }
+
     for (auto file : pDir->m_Files)
-        Thread_ExtractFile(file);
+        Thread_ExtractFile(file, path);
 
     for (auto dir : pDir->m_Directories)
-        Thread_ExtractFolder(dir);
+        Thread_ExtractFolder(dir, path);
 
     // If log then mutex?
     //CLog::INF("Extracted: %s, To: %s", pDir->m_Name.c_str(), "Extracted/");
@@ -132,6 +178,7 @@ void CArchiveBrowser::Cleanup() {
 
 void CArchiveBrowser::Draw() {
     DrawResolver();
+    DrawProgressbar();
 
     ImGui::SetNextWindowSize(ImVec2(1200, 700), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
@@ -208,6 +255,50 @@ void CArchiveBrowser::DrawResolver() {
 
     ImGui::End();
 }
+void CArchiveBrowser::DrawProgressbar() {
+    if (m_ProgressExtraction <= 0.00f)
+        return;
+
+    if (m_OpenPopup) {
+        ImGui::OpenPopup("AB_Progress");
+        m_OpenPopup = false;
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(250, 150), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.50f, 0.50f));
+
+    if (ImGui::BeginPopupModal("AB_Progress")) {
+        std::lock_guard lock(m_Mutex);
+
+        auto digits = std::to_string(m_ProgressTar).length();
+        auto string = Utils::BytesToHuman2(m_ProgressCurSize, m_ProgressTarSize);
+
+        ImGui::Text("Extracting (%*d/%*d) [%s]", digits, m_ProgressCur, digits, m_ProgressTar, string.c_str());
+        ImGui::ProgressBar(m_ProgressExtraction, ImVec2(0.00f, 0.00f));
+
+        if (ImGui::Button("Cancel")) {
+            m_ShouldCancel = true;
+
+            m_ProgressCur = 0;
+            m_ProgressTar = 0;
+            m_ProgressCurSize = 0;
+            m_ProgressTarSize = 0;
+            m_ProgressExtraction = 0.00f;
+        }
+
+        if (m_ProgressExtraction >= 1.00f) {
+            m_ProgressCur = 0;
+            m_ProgressTar = 0;
+            m_ProgressCurSize = 0;
+            m_ProgressTarSize = 0;
+            m_ProgressExtraction = 0.00f;
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
 
 void CArchiveBrowser::DrawFile(SVFSFile* file) {
     ImGui::TableNextRow();
@@ -218,51 +309,12 @@ void CArchiveBrowser::DrawFile(SVFSFile* file) {
 
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::Button("Extract")) {
-            // TODO: Popup with cancel
-            //std::thread thread(&CArchiveBrowser::ExtractFile, this, file);
-            //thread.detach();
-
             ExtractFile(file);
-
-            /*std::string pathBase = SDL_GetBasePath();
-            std::string pathDestination = pathBase + "Extracted/";
-
-            auto vPath = ConstructVPath(file);
-
-            pathDestination += vPath;
-            fs::path fullPath(pathDestination);
-
-            if (!fs::exists(pathDestination))
-                fs::create_directories(fullPath.parent_path());
-
-            std::ifstream iFile(file->m_ArchivePath, std::ios::binary);
-            if (iFile.is_open()) {
-                std::ofstream oFile(pathDestination, std::ios::binary);
-                if (oFile.is_open()) {
-                    std::string data;
-                    data.resize(file->m_FileSize);
-
-                    iFile.seekg(file->m_ArchiveOffset);
-                    iFile.read(data.data(), file->m_FileSize);
-                    oFile.write(data.data(), file->m_FileSize);
-
-                    iFile.close();
-                    oFile.close();
-
-                    CLog::INF("Extracted: %s, To: %s", file->m_Name.c_str(), pathDestination.c_str());
-                }
-                else {
-                    CLog::ERR("(Extract): Failed to open destination file! Path: %s", pathDestination.c_str());
-                }
-            }
-            else {
-                CLog::ERR("(Extract): Failed to open archive file! Path: %s", file->m_ArchivePath.c_str());
-            }*/
 
             ImGui::CloseCurrentPopup();
         }
         if (ImGui::Button("Extract to..")) {
-            // TODO: Open file dialog
+            SDL_ShowOpenFolderDialog(Callback_FileExtractTo, file, nullptr, nullptr, false);
 
             //CLog::INF("Extracting: %s, Destination: %s", file->m_Name.c_str(), "Extracted/");
             ImGui::CloseCurrentPopup();
@@ -294,11 +346,13 @@ void CArchiveBrowser::DrawDirectory(SVFSDir* directory) {
 
     if (ImGui::BeginPopupContextItem()) {
         if (ImGui::Button("Extract")) {
-            // TODO: Popup with cancel
-            //std::thread thread(&CArchiveBrowser::ExtractFolder, this, directory);
-            //thread.detach();
-
             ExtractFolder(directory);
+
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (ImGui::Button("Extract to..")) {
+            SDL_ShowOpenFolderDialog(Callback_FolderExtractTo, directory, nullptr, nullptr, false);
 
             ImGui::CloseCurrentPopup();
         }
@@ -511,22 +565,31 @@ void CArchiveBrowser::Close() {
     m_HashedDir.m_Name = "Not dehashed";
 }
 
-void CArchiveBrowser::ExtractFile(SVFSFile* pFile) {
-    m_OpenPopup = true;
+void CArchiveBrowser::ExtractFile(SVFSFile* pFile, std::string path) {
+    //m_OpenPopup = true;
+    m_ShouldCancel = false;
 
-    std::thread thread(&CArchiveBrowser::Thread_ExtractFile, this, pFile);
+    std::thread thread(&CArchiveBrowser::Thread_ExtractFile, this, pFile, path);
     thread.detach();
 
 }
-void CArchiveBrowser::ExtractFolder(SVFSDir* pDir) {
+void CArchiveBrowser::ExtractFolder(SVFSDir* pDir, std::string path) {
     // TODO: Calculate total file count and total size.
     auto size = CalcDirSize(pDir);
+    auto count = pDir->GetFileCount();
 
-    CLog::INF("Directory size: %s (%lld)", Utils::BytesToHuman(size).c_str(), size);
+    CLog::INF("Directory size: %s (%lld) [%d files]", Utils::BytesToHuman(size).c_str(), size, count);
     
-    m_OpenPopup = true;
+    m_ProgressCur = 0;
+    m_ProgressTar = count;
+    m_ProgressCurSize = 0;
+    m_ProgressTarSize = uint32_t(size);
+    m_ProgressExtraction = 0.00f;
 
-    std::thread thread(&CArchiveBrowser::Thread_ExtractFolder, this, pDir);
+    m_OpenPopup = true;
+    m_ShouldCancel = false;
+
+    std::thread thread(&CArchiveBrowser::Thread_ExtractFolder, this, pDir, path);
     thread.detach();
 }
 
