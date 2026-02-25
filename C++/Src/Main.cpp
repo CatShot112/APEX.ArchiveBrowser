@@ -2,6 +2,8 @@
 
 #include "App.hpp"
 
+#include <filesystem>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_messagebox.h>
@@ -11,6 +13,8 @@
 #include <imgui/imgui_impl_sdlrenderer3.h>
 
 #pragma comment(lib, "SDL3.lib")
+
+namespace fs = std::filesystem;
 
 constexpr auto PROGRAM_NAME = "APEX.ArchiveBrowser";
 constexpr auto PROGRAM_VER = "1.0.0";
@@ -69,6 +73,10 @@ SDL_AppResult SDL_AppInit(void** appState, int argc, char** argv) {
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(mainScale);
     style.FontScaleDpi = mainScale;
+
+    // Load default layout if it exists and first-ever run.
+    if (fs::exists("LayoutDefault.ini"))
+        ImGui::LoadIniSettingsFromDisk("LayoutDefault.ini");
 
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
