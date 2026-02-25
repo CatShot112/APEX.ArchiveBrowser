@@ -12,9 +12,6 @@ union SDL_Event;
 
 // TODO: Ability to import new strings to database without recreating it.
 
-// TODO: Cancellation of extraction.
-//       Popup just like when creating/loading database.
-
 // TODO: Create global popup mgr?
 
 // TODO: Fix mutex where needed.
@@ -22,14 +19,12 @@ union SDL_Event;
 // TODO: Total folder size (if enabled in settings).
 //       Requires openeing file/folder again to populate data?
 
-// TODO: Determine file type.
-
-// TODO: File size in human readable format with tooltip showing size in bytes.
-
 // TODO: Complete creating Resolver for conflicting hashes.
 //       Ability to extract raw file for inspection in external programs. (or in local hex viewer if implemented)
 //       Add simple usage/tutorial.
 //       Ability to remember which prop/vPath selected for current game version. (in game_ver database?)
+
+// TODO: Settings (idk what to put here yet)
 
 class App {
     bool m_ShouldExit;
