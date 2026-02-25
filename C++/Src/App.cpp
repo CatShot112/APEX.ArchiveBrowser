@@ -47,7 +47,6 @@ App::App() {
     m_ShowLog = true;
     m_ShowAbout = false;
     m_ShowSettings = false;
-    m_ShowResolver = false;
 
     m_AutoScroll = true;
     m_ScrollToBottom = false;
@@ -187,9 +186,7 @@ void App::Draw() {
     Draw_MainMenuBar();
 
     CArchiveBrowser::Instance().Draw();
-
     CDatabaseManager::Instance().Draw();
-    CDatabaseManager::Instance().DrawProgressbar(); // TODO: Make progressbars global.
 
     if (m_ShowLog)
         Draw_Log();
@@ -197,8 +194,6 @@ void App::Draw() {
         Draw_About();
     if (m_ShowSettings)
         Draw_Settings();
-    if (m_ShowResolver)
-        CArchiveBrowser::Instance().DrawResolver();
 }
 
 void App::Draw_MainMenuBar() {
@@ -234,7 +229,7 @@ void App::Draw_MainMenuBar() {
         ImGui::Separator();
 
         if (ImGui::MenuItem("Resolve duplicates", "", nullptr, ab.HasDuplicatedHashes())) {
-            m_ShowResolver = true;
+            ab.OpenResolver();
         }
 
         ImGui::Separator();

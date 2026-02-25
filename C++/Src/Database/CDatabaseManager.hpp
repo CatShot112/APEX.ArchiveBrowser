@@ -52,7 +52,6 @@ public:
 
     void CancelCurrentOperation();
 
-    // TODO: Progress bars
     void LoadDataFromFileTxt();
     void LoadDataFromFileDb();
 

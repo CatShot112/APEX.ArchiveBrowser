@@ -487,6 +487,8 @@ bool shouldFilter = false;
 std::vector<std::string*> filtered;
 
 void CDatabaseManager::Draw() {
+    DrawProgressbar();
+
     if (!ImGui::Begin("Database Browser", nullptr, ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;

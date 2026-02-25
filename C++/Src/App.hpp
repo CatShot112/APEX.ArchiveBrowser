@@ -39,7 +39,6 @@ class App {
     bool m_ShowLog;
     bool m_ShowAbout;
     bool m_ShowSettings;
-    bool m_ShowResolver;
 
     bool m_AutoScroll;
     bool m_ScrollToBottom;

@@ -131,6 +131,8 @@ void CArchiveBrowser::Cleanup() {
 }
 
 void CArchiveBrowser::Draw() {
+    DrawResolver();
+
     ImGui::SetNextWindowSize(ImVec2(1200, 700), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
     //ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_FirstUseEver | ImGuiCond_Appearing, ImVec2(0.50f, 0.50f));
@@ -157,6 +159,9 @@ void CArchiveBrowser::Draw() {
     ImGui::End();
 }
 void CArchiveBrowser::DrawResolver() {
+    if (!m_ShowResolver)
+        return;
+
     ImGui::SetNextWindowSize(ImVec2(600, 350), ImGuiCond_FirstUseEver);
 
     if (!ImGui::Begin("Conflict Resolver", &m_ShowResolver, ImGuiWindowFlags_NoCollapse)) {
@@ -536,6 +541,8 @@ void CArchiveBrowser::ResolveDuplicate(uint32_t hash, std::string vPath) {
 
     m_HashedDir.m_Name = m_HashedDir.m_Name + " (" + std::to_string(m_HashedDir.m_Files.size()) + ")";
 }
+
+void CArchiveBrowser::OpenResolver() { m_ShowResolver = true; }
 
 const bool CArchiveBrowser::IsOpenedAny() { return m_OpenedFile || m_OpenedFolder; }
 const bool CArchiveBrowser::IsOpenedFile() { return m_OpenedFile; }

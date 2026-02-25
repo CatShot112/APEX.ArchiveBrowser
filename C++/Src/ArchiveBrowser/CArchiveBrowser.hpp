@@ -60,6 +60,8 @@ public:
 
     void ResolveDuplicate(uint32_t hash, std::string vPath);
 
+    void OpenResolver();
+
     const bool IsOpenedAny();
     const bool IsOpenedFile();
     const bool IsOpenedFolder();
