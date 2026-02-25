@@ -271,9 +271,14 @@ void CArchiveBrowser::DrawFile(SVFSFile* file) {
         ImGui::EndPopup();
     }
 
+    auto size = file->m_FileSize;
+    auto sizeStr = std::to_string(size) + " B";
+
     ImGui::TableNextColumn();
-    //ImGui::Text("%d", file->m_FileSize);
-    ImGui::Text("%s", Utils::BytesToHuman(file->m_FileSize).c_str());
+    ImGui::Text("%s", Utils::BytesToHuman(size).c_str());
+
+    if (size > 1024)
+        ImGui::SetItemTooltip(sizeStr.c_str());
 
     ImGui::TableNextColumn();
     //ImGui::Text("%s", FileTypeToString(file.m_FileType).c_str());
@@ -301,9 +306,15 @@ void CArchiveBrowser::DrawDirectory(SVFSDir* directory) {
         ImGui::EndPopup();
     }
 
+    auto size = CalcDirSize(directory);
+    auto sizeStr = std::to_string(size) + " B";
+
     ImGui::TableNextColumn();
-    //ImGui::TextDisabled("---"); // Size
-    ImGui::TextDisabled(Utils::BytesToHuman(CalcDirSize(directory)).c_str());
+    ImGui::TextDisabled(Utils::BytesToHuman(size).c_str());
+
+    if (size > 1024)
+        ImGui::SetItemTooltip(sizeStr.c_str());
+
     ImGui::TableNextColumn();
     ImGui::TextDisabled("---"); // Type
 
