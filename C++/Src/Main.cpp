@@ -75,7 +75,7 @@ SDL_AppResult SDL_AppInit(void** appState, int argc, char** argv) {
     style.FontScaleDpi = mainScale;
 
     // Load default layout if it exists and first-ever run.
-    if (fs::exists("LayoutDefault.ini"))
+    if (!fs::exists("imgui.ini") && fs::exists("LayoutDefault.ini"))
         ImGui::LoadIniSettingsFromDisk("LayoutDefault.ini");
 
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
