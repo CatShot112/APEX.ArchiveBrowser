@@ -450,8 +450,12 @@ void CArchiveBrowser::OpenFile(std::string filePath, bool fromFolder, bool reloa
 
     uint32_t archiveId{};
 
-    if (std::regex_search(str, match, rgx))
-        archiveId = std::atoi(std::string(match[0]).c_str());
+    if (std::regex_search(str, match, rgx)) {
+        std::string matchStr = match[0].str();
+        std::reverse(matchStr.begin(), matchStr.end());
+
+        archiveId = std::atoi(matchStr.c_str());
+    }
 
     STabFileHeader header{};
     tabFile.read((char*)&header, sizeof(header));
