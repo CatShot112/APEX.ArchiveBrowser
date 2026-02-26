@@ -95,7 +95,6 @@
     <ClCompile Include="Include\imgui\imgui.cpp" />
     <ClCompile Include="Include\imgui\imgui_demo.cpp" />
     <ClCompile Include="Include\imgui\imgui_draw.cpp" />
-    <ClCompile Include="Include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Include\imgui\imgui_impl_sdl3.cpp" />
     <ClCompile Include="Include\imgui\imgui_impl_sdlrenderer3.cpp" />
     <ClCompile Include="Include\imgui\imgui_stdlib.cpp" />
@@ -114,8 +113,6 @@
     <ClInclude Include="Include\hashes\MurmurHash3.h" />
     <ClInclude Include="Include\imgui\imconfig.h" />
     <ClInclude Include="Include\imgui\imgui.h" />
-    <ClInclude Include="Include\imgui\imgui_impl_opengl3.h" />
-    <ClInclude Include="Include\imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="Include\imgui\imgui_impl_sdl3.h" />
     <ClInclude Include="Include\imgui\imgui_impl_sdlrenderer3.h" />
     <ClInclude Include="Include\imgui\imgui_internal.h" />
